@@ -295,6 +295,13 @@ pub struct Bump {
     allocation_limit: Cell<Option<usize>>,
 }
 
+
+impl Clone for Bump {
+    fn clone(&self) -> Self {
+        return unsafe { mem::transmute_copy(self) }
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 struct ChunkFooter {
