@@ -325,12 +325,12 @@ impl ManualBumpRef {
 unsafe impl Allocator for ManualBumpRef {
     #[inline(always)]
     fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
-        return unsafe { (*self.pointer).allocate(layout) };
+        return unsafe { (&*self.pointer).allocate(layout) };
     }
 
     #[inline(always)]
     unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
-        return (*self.pointer).dealloc(ptr, layout);
+        return (&*self.pointer).dealloc(ptr, layout);
     }
 }
 
