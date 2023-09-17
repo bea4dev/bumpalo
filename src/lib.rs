@@ -318,6 +318,13 @@ impl Clone for Box<Bump> {
     }
 }
 
+#[cfg(feature = "allocator_api")]
+impl Drop for Box<Bump> {
+    fn drop(&mut self) {
+        // Do nothing.
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 struct ChunkFooter {
