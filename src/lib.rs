@@ -26,6 +26,8 @@ use core_alloc::alloc::{alloc, dealloc, Layout};
 
 #[cfg(feature = "allocator_api")]
 use core_alloc::alloc::{AllocError, Allocator};
+use core::ops::Deref;
+
 
 #[cfg(all(feature = "allocator-api2", not(feature = "allocator_api")))]
 use allocator_api2::alloc::{AllocError, Allocator};
@@ -295,8 +297,21 @@ pub struct Bump {
     allocation_limit: Cell<Option<usize>>,
 }
 
+#[cfg(feature = "allocator_api")]
+unsafe impl Allocator for Box<Bump> {
+    #[inline(always)]
+    fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
+        return self.deref().allocate(layout);
+    }
 
-impl Clone for Bump {
+    #[inline(always)]
+    unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
+        return self.deref().dealloc(ptr, layout);
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl Clone for Box<Bump> {
     fn clone(&self) -> Self {
         return unsafe { mem::transmute_copy(self) }
     }
