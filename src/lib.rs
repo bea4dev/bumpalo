@@ -27,6 +27,7 @@ use core_alloc::alloc::{alloc, dealloc, Layout};
 #[cfg(feature = "allocator_api")]
 use core_alloc::alloc::{AllocError, Allocator};
 use core::ops::Deref;
+use core_alloc::boxed::Box;
 
 
 #[cfg(all(feature = "allocator-api2", not(feature = "allocator_api")))]
