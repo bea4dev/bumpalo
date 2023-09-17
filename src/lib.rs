@@ -298,30 +298,46 @@ pub struct Bump {
     allocation_limit: Cell<Option<usize>>,
 }
 
+/// Manual pointer ref of Bump
+#[derive(Debug)]
+pub struct ManualBumpRef {
+    pointer: *mut Bump
+}
+
+
+impl ManualBumpRef {
+
+    /// Create ref
+    pub fn new(bump: Bump) -> Self {
+        return Self {
+            pointer: Box::into_raw(Box::new(bump))
+        }
+    }
+
+    /// Manual drop
+    pub unsafe fn manual_drop(&self) {
+        drop(Box::from_raw(self.pointer));
+    }
+
+}
+
 #[cfg(feature = "allocator_api")]
-unsafe impl Allocator for Box<Bump> {
+unsafe impl Allocator for ManualBumpRef {
     #[inline(always)]
     fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
-        return self.deref().allocate(layout);
+        return unsafe { (*self.pointer).allocate(layout) };
     }
 
     #[inline(always)]
     unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
-        return self.deref().dealloc(ptr, layout);
+        return (*self.pointer).dealloc(ptr, layout);
     }
 }
 
 #[cfg(feature = "allocator_api")]
-impl Clone for Box<Bump> {
+impl Clone for ManualBumpRef {
     fn clone(&self) -> Self {
         return unsafe { mem::transmute_copy(self) }
-    }
-}
-
-#[cfg(feature = "allocator_api")]
-impl Drop for Box<Bump> {
-    fn drop(&mut self) {
-        // Do nothing.
     }
 }
 
