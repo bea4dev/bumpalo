@@ -27,6 +27,7 @@ use core_alloc::alloc::{alloc, dealloc, Layout};
 #[cfg(feature = "allocator_api")]
 use core_alloc::alloc::{AllocError, Allocator};
 use core::ops::Deref;
+use core::ops::DerefMut;
 use core_alloc::boxed::Box;
 
 
@@ -338,6 +339,22 @@ unsafe impl Allocator for ManualBumpRef {
 impl Clone for ManualBumpRef {
     fn clone(&self) -> Self {
         return unsafe { mem::transmute_copy(self) }
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl Deref for ManualBumpRef {
+    type Target = Bump;
+
+    fn deref(&self) -> &Self::Target {
+        return unsafe { &*self.pointer }
+    }
+}
+
+#[cfg(feature = "allocator_api")]
+impl DerefMut for ManualBumpRef {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        return unsafe { &mut *self.pointer }
     }
 }
 
